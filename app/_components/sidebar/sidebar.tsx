@@ -1,28 +1,40 @@
-const Sidebar = () => {
+import { useDataStore } from "@/app/_context/data"
+import React from "react"
+
+const Sidebar = ({index}: {index: number}) => {
+    const [isPlaying, setIsPlaying] = React.useState<boolean>(false)
+    const { podcastsData } = useDataStore()
     return (
-        <div className="flex flex-col min-h-screen w-1/4 gap-5 justify-between border-r border-gray-300 backdrop-blur backdrop-saturate-200">
-            <div className="flex flex-col flex-grow w-full gap-10 p-5 justify-center">
+        <div className="flex flex-col min-h-screen w-1/4 justify-between shadow-lg backdrop-blur backdrop-saturate-200">
+            <div className="flex flex-row items-center">
+                <div className="w-24 h-24 mt-5">
+                    <img src="https://rose-melodic-felidae-510.mypinata.cloud/ipfs/QmV7QGnhPvYgaGMvN5mnJNCJYvfFDhBY7NAxLejDcDQvDs" />
+                </div>
+                <div className="font-bold text-2xl  tracking-widest">
+                    <span className="text-blue-500">Story</span>Pods
+                </div>
+            </div>
+            <div className="flex flex-col flex-grow w-full gap-10 p-5">
                 <div className="text-gray-500 font-bold w-full">Discover</div>
-                <div className="flex flex-col gap-3 font-semibold w-full">
+                <div className="flex flex-col gap-3 font-semibold w-full pl-4">
                     <div>Recently Added</div>
                     <div title="Coming soon..">Your Subscriptions</div>
                 </div>
                 <div className="text-gray-500 font-bold w-full">Favourites</div>
-                <div className="flex flex-col gap-3 font-semibold w-full">
+                <div className="flex flex-col gap-3 font-semibold w-full pl-4">
                     <div>Podcast One</div>
                     <div>Podcast Two</div>
                     <div>Podcast Three</div>
                 </div>
 
             </div>
-            <div className="w-full h-60 bg-white/80 flex flex-col">
+            <div className="w-full h-60 bg-white/60 flex flex-col">
                 <div className="flex flex-col space-x-4 items-center justify-between rounded-lg shadow-lg flex-grow">
-                    <div className="flex flex-row justify-between w-full">
+                    <div className="flex flex-row justify-between">
                         <div className="p-6 pr-0 flex flex-col gap-3">
-                            <h3 className="text-lg font-semibold">WAIT AND SEE</h3>
-                            <p className="text-sm text-gray-400">Monogen</p>
+                            <h3 className="text-lg font-semibold">{podcastsData.length > index && podcastsData[index].name}</h3>
+                            <p className="text-sm">{podcastsData.length > index && podcastsData[index].owner}</p>
                         </div>
-                        <img src="https://via.placeholder.com/50" alt="Album Art" className="w-36 h-36"/>
 
                     </div>
                     <div className="flex space-x-8 ml-auto pb-4">
@@ -31,10 +43,33 @@ const Sidebar = () => {
                                 <path d="M10 19l-7-7 7-7v14zm9-14h-2v14h2v-14z" />
                             </svg>
                         </button>
-                        <button className="text-white bg-blue-500 rounded-full p-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
+                        <button className="text-white bg-blue-500 rounded-full p-4" onClick={() => {
+                            if (!isPlaying) {
+                                const audio = document.getElementById("audio")
+                                console.log(audio)
+                                audio.play()
+                                audio.addEventListener('pause', () => setIsPlaying(false));
+                                audio.removeEventListener('play', () => setIsPlaying(true));
+                                setIsPlaying(true)
+                            } else {
+                                const audio = document.getElementById("audio")
+                                console.log(audio)
+                                audio.pause()
+                                audio.addEventListener('play', () => setIsPlaying(true));
+                                audio.removeEventListener('pause', () => setIsPlaying(false));
+                                setIsPlaying(false)
+                            }
+                        }}>
+                            {!isPlaying ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            ): (
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="6" y="4" width="4" height="16" fill="white"/>
+                                    <rect x="14" y="4" width="4" height="16" fill="white"/>
+                                </svg>
+                            )}
                         </button>
                         <button className="text-blue-500">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">

@@ -1,6 +1,22 @@
+import { logEvents, writeContractHook } from '@/app/_utils/contract';
+import { createNFTMetadata, uploadFile, uploadJson } from '@/app/_utils/ipfs';
 import { useState } from 'react';
+import { BaseError, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import abi from "../../abi/abi.json"
+import { parseAbi } from 'viem';
 
 const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix: string | null}) => {
+    const { 
+      data: hash,
+      writeContract 
+    } = useWriteContract() 
+
+
+    const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    })
+
     const [podcastName, setPodcastName] = useState<string>('');
     const [ltAmount, setLtAmount] = useState<number>(1);
 
@@ -9,6 +25,8 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
 
     const [transcriptsFile, setTranscriptsFile] = useState<any>(null);
   
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
     const handlePodcastNameChange = (e: any) => {
       setPodcastName(e.target.value);
     };
@@ -29,13 +47,14 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
       setCover(e.target.files[0]);
     };
 
-    const handleSubmit = () => {
-      console.log({
-        podcastName,
-        mp3File,
-        transcriptsFile,
-      });
-      onClose();
+    const handleSubmit = async () => {
+      setIsLoading(true)
+      createNFTMetadata(podcastName, cover, mp3File, transcriptsFile, async (uri: string) => {
+        await writeContractHook(writeContract,abi, "mintUniqueIp", [uri])
+        setIsLoading(false)
+        onClose();
+    })
+
     };
   
     if (!isOpen) return null;
@@ -141,15 +160,17 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
           <div className="flex justify-end">
             <button
               onClick={onClose}
+              disabled={isLoading || isConfirming}
               className="bg-gray-500 text-white px-4 py-2 rounded-lg mr-2 focus:outline-none hover:bg-gray-600"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
+              disabled={isLoading || isConfirming}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none hover:bg-blue-600"
             >
-              Submit
+              {isLoading || isConfirming ? "Uploading ..." : "Submit"}
             </button>
           </div>
         </div>
