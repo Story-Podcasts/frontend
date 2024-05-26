@@ -7,21 +7,23 @@ const Footer = ({source, transcript, setCurrentLine}: {source: any, transcript: 
 
     React.useEffect(() => {
       console.log(source)
-      const audio = document.getElementById("audio")
-      if (audio) {
-        audio.firstChild.src = source
-        audio.load();
-        audio.onloadedmetadata = function() {
-          console.log(audio.duration);
-          audio.addEventListener('timeupdate', () => {
-            if (!audio.paused) {
-              setTimestamp((audio.currentTime / audio.duration) * 100)
-            }
-          });
-          setDuration(audio.duration)
-        };
+      if (document) {
+        const audio = document.getElementById("audio") as any
+        if (audio) {
+          audio.firstChild.src = source
+          audio.load();
+          audio.onloadedmetadata = function() {
+            console.log(audio.duration);
+            audio.addEventListener('timeupdate', () => {
+              if (!audio.paused) {
+                setTimestamp((audio.currentTime / audio.duration) * 100)
+              }
+            });
+            setDuration(audio.duration)
+          };
+        }
       }
-    }, [source, document.getElementById("audio")?.firstChild.src])
+    }, [source])
 
     React.useEffect(() => {
       if (transcript) {
@@ -66,7 +68,7 @@ const Footer = ({source, transcript, setCurrentLine}: {source: any, transcript: 
       <span className="font-bold text-sm">0:00</span>
       <input type="range" className="w-full mx-4" value={timestamp} onChange={(e) => {
         console.log(e.target.value)
-        const audio = document.getElementById("audio")
+        const audio = document.getElementById("audio") as any
         setTimestamp(parseFloat(e.target.value))
         audio.currentTime = duration * parseFloat(e.target.value) / 100
       }}/>

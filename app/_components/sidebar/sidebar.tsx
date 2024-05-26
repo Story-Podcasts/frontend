@@ -45,14 +45,14 @@ const Sidebar = ({index}: {index: number}) => {
                         </button>
                         <button className="text-white bg-blue-500 rounded-full p-4" onClick={() => {
                             if (!isPlaying) {
-                                const audio = document.getElementById("audio")
+                                const audio = document.getElementById("audio") as any
                                 console.log(audio)
                                 audio.play()
                                 audio.addEventListener('pause', () => setIsPlaying(false));
                                 audio.removeEventListener('play', () => setIsPlaying(true));
                                 setIsPlaying(true)
                             } else {
-                                const audio = document.getElementById("audio")
+                                const audio = document.getElementById("audio") as any
                                 console.log(audio)
                                 audio.pause()
                                 audio.addEventListener('play', () => setIsPlaying(true));
