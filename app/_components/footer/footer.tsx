@@ -31,10 +31,12 @@ const Footer = ({source, transcript, setCurrentLine}: {source: any, transcript: 
         for (let i = 0; i < transcript.length; i++) {
           const element = transcript[i];
           if (i+1 >= transcript.length && element.time <= duration) {
+            console.log("heheheh")
             setCurrentLine(i)
             break
           }
           else if ((element.time <= ((timestamp / 100)*duration)) && (transcript[i+1].time > ((timestamp / 100)*duration))) {
+            console.log((timestamp / 100)*duration)
             console.log(i)
             setCurrentLine(i)
             break

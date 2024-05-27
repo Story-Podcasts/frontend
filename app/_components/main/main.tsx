@@ -25,7 +25,8 @@ const Main = ({index, setIndex}: {index: number, setIndex: any}) => {
         const transcripts = lines.map(line => {
           const [time, ...textParts] = line.split(' ');
           const text = textParts.join(' ');
-          const timeInSeconds = parseFloat(time.replace(':', '').replace(':', '').replace(':', ''));
+          let timeInSeconds = 0;
+          time.split(":").reverse().map((el, index) => {timeInSeconds += parseFloat(el)*(Math.pow(60, index))})
           return { time: timeInSeconds, text: text.trim() };
         });
         console.log(transcripts)

@@ -9,6 +9,7 @@ import { useDataStore } from '@/app/_context/data';
 const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix: string | null}) => {
     const { 
       data: hash,
+      error,
       writeContract 
     } = useWriteContract() 
 
@@ -23,7 +24,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
     })
 
     const [podcastName, setPodcastName] = useState<string>('');
-    const [ltAmount, setLtAmount] = useState<number>(1);
+    const [collaborator, setCollaborator] = useState<string>('');
 
     const [mp3File, setMp3File] = useState<any>(null);
     const [cover, setCover] = useState<any>(null);
@@ -36,8 +37,8 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
       setPodcastName(e.target.value);
     };
 
-    const handleLtAmountChange = (e: any) => {
-      setLtAmount(parseInt(e.target.value));
+    const handleCollaboratorChange = (e: any) => {
+      setCollaborator(e.target.value);
     };
   
     const handleMp3FileChange = (e: any) => {
@@ -52,17 +53,19 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
       setCover(e.target.files[0]);
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e: any) => {
+      e.preventDefault()
       if (!remix) {
         setIsLoading(true)
         createNFTMetadata(podcastName, cover, mp3File, transcriptsFile, async (uri: string) => {
-          await writeContractHook(writeContract,abi, "mintUniqueIp", [uri])
+          await writeContractHook(writeContract,abi, "registerandLicenseforUniqueIP", [uri, collaborator])
           setIsLoading(false)
           onClose();
       })
       } else {
         onClose()
       }
+      
 
     };
   
@@ -70,10 +73,12 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
   
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+        <form onSubmit={handleSubmit}>
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xl">
           <div className="mb-4">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Upload Podcast</h2>
             <p className="text-gray-600">Please fill in the details below.</p>
+            {error && error.message}
           </div>
           {remix && (
             <div className="mb-4">
@@ -94,6 +99,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
               {remix && "Remixed "}Podcast Name
             </label>
             <input
+              required
               type="text"
               id="podcastName"
               value={podcastName}
@@ -103,16 +109,17 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ltAmount">
-              No. of License Tokens
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="collaborator">
+              Collaborator Address
             </label>
             <input
-              type="number"
-              id="ltAmount"
-              value={ltAmount}
-              onChange={handleLtAmountChange}
+              required
+              type="text"
+              id="collborator"
+              value={collaborator}
+              onChange={handleCollaboratorChange}
               className="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-500"
-              placeholder="Enter the no. of license tokens needed"
+              placeholder="Address which can remix IP"
             />
           </div>
           <div className="mb-4">
@@ -122,6 +129,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
             <div className="flex items-center">
               <label className="w-full p-3 border rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 bg-gray-100 text-gray-700 hover:bg-gray-200">
                 <input
+                  required
                   type="file"
                   id="mp3File"
                   onChange={handleMp3FileChange}
@@ -139,6 +147,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
             <div className="flex items-center">
               <label className="w-full p-3 border rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 bg-gray-100 text-gray-700 hover:bg-gray-200">
                 <input
+                  required
                   type="file"
                   id="cover"
                   onChange={handleCoverChange}
@@ -156,6 +165,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
             <div className="flex items-center">
               <label className="w-full p-3 border rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 bg-gray-100 text-gray-700 hover:bg-gray-200">
                 <input
+                  required
                   type="file"
                   id="transcriptsFile"
                   onChange={handleTranscriptsFileChange}
@@ -175,7 +185,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
               Cancel
             </button>
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading || isConfirming}
               className="bg-blue-500 text-white px-4 py-2 rounded-lg focus:outline-none hover:bg-blue-600"
             >
@@ -183,6 +193,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
             </button>
           </div>
         </div>
+        </form>
       </div>
     );
   };
