@@ -16,12 +16,12 @@ export const writeContractHook = async (write: WriteContractMutate<Config, unkno
     })
 }
 
-export const logEvents = async (event: AbiEvent, args: any, fromBlock: bigint, toBlock: bigint) => {
+export const logEvents = async (event: AbiEvent, args: any, fromBlock: bigint) => {
     const logs = await publicClient.getLogs({
         address,
         event,
         fromBlock,
-        toBlock,
+        toBlock: "latest",
         args
     })
     return logs

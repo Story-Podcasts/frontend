@@ -5,7 +5,8 @@ import { config } from "../_config/wallet";
 
 import abi from "../abi/abi.json"
 import { useAccount, useWriteContract } from "wagmi";
-import { writeContractHook } from "../_utils/contract";
+import { logEvents, writeContractHook } from "../_utils/contract";
+import { parseAbiItem } from "viem";
 
 type PodcastData = {
     tokenId: number,
@@ -17,12 +18,10 @@ type PodcastData = {
     owner: string
 }
 
-type Notification = {
-    type: string,
-    indexOne: `0x${string}`,
-    amount: number,
+export type Notification = {
+    ipId: `0x${string}`,
     recipient: `0x${string}`,
-    message: string
+    licenseTokenId: number
 }
 
 type Props = {
@@ -84,7 +83,7 @@ export const DataContextProvider = (props: Props) => {
                         abi,
                         address: contract,
                         functionName: "getUserName",
-                        account: ipOwner
+                        args: [ipOwner]
                     }) as string
                     let data: PodcastData = {
                         tokenId: parseInt(el.tokenId),
@@ -93,8 +92,10 @@ export const DataContextProvider = (props: Props) => {
                         audio: jsonExt.audio,
                         transcripts: jsonExt.transcripts,
                         cover: json.image,
+
                         owner: ownerName
                     }
+                    console.log(data)
                     podcasts.push(data)
                     setPodcastData(podcasts)
                 });
@@ -111,7 +112,7 @@ export const DataContextProvider = (props: Props) => {
                         abi,
                         address: contract,
                         functionName: "getUserName",
-                        account: account.address
+                        args: [account.address]
                     }) as string
                     setUserName(res)
 
@@ -120,6 +121,23 @@ export const DataContextProvider = (props: Props) => {
                     await writeContractHook(writeContract, abi, "registerUser", [name])
                     setUserName(name)
                 }
+                console.log("here")
+                const events = await logEvents(
+                    parseAbiItem("event remixPermissionGranted(address indexed, address indexed, uint256)"),
+                    {
+                        recipient: account.address
+                    },
+                    BigInt(5980471),
+                )
+                console.log(events)
+                let notifs: Notification[] = events.map((event) => {
+                    return {
+                        ipId: (event.args as any[])[0] as string,
+                        recipient: (event.args as any[])[1] as string,
+                        licenseTokenId: (event.args as any[])[2] as number
+                    } as Notification
+                })
+                setNotifications(notifs)
             })()
         }
     }, [account.address])

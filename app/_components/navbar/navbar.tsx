@@ -3,16 +3,24 @@ import { useState } from "react";
 import Modal from "../modal/modal";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useDataStore } from "@/app/_context/data";
+import NotificationBox from "../_notifications/notifications";
 
 const Navbar = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const {userName} = useDataStore()
+    const [remix, setRemix] = useState<string | null>(null);
+    const {userName, notifications} = useDataStore()
 
+    const [showNotifications, setShowNotifications] = useState(false);
+  const handleToggleNotifications = () => {
+    setShowNotifications(!showNotifications);
+  };
+    
     const openModal = () => {
         setIsModalOpen(true);
     }
-
+    
     const closeModal = () => {
+        setRemix(null)
         setIsModalOpen(false);
     }
     return (
@@ -35,7 +43,7 @@ const Navbar = () => {
                     </button>
 
                 </div>
-                <div className="relative">
+                <div className="relative" onClick={handleToggleNotifications}>
                     <button className="flex items-center justify-center p-3 bg-white text-blue-500 rounded-full hover:bg-gray-200 focus:outline-none ring-2 ring-blue-500 shadow-lg">
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a1 1 0 00-2 0v1.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.437L4 17h5m6 0a3 3 0 01-6 0" />
@@ -44,8 +52,19 @@ const Navbar = () => {
                     <span className="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
                 </div>
             </div>
-
-            <Modal isOpen={isModalOpen} onClose={closeModal} remix={null}/>
+            {showNotifications && (
+                <div>
+                <NotificationBox
+                    notifications={notifications}
+                    onClose={() => setShowNotifications(false)}
+                    setRemix={(i: string) => {
+                        setRemix(i)
+                        openModal()
+                    }}
+                />
+                </div>
+            )}
+            <Modal isOpen={isModalOpen} onClose={closeModal} remix={remix}/>
 
             <ConnectButton.Custom>
             {({

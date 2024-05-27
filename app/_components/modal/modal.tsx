@@ -4,12 +4,17 @@ import { useState } from 'react';
 import { BaseError, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import abi from "../../abi/abi.json"
 import { parseAbi } from 'viem';
+import { useDataStore } from '@/app/_context/data';
 
 const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix: string | null}) => {
     const { 
       data: hash,
       writeContract 
     } = useWriteContract() 
+
+    const {
+      podcastsData
+    } = useDataStore()
 
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -48,12 +53,16 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
     };
 
     const handleSubmit = async () => {
-      setIsLoading(true)
-      createNFTMetadata(podcastName, cover, mp3File, transcriptsFile, async (uri: string) => {
-        await writeContractHook(writeContract,abi, "mintUniqueIp", [uri])
-        setIsLoading(false)
-        onClose();
-    })
+      if (!remix) {
+        setIsLoading(true)
+        createNFTMetadata(podcastName, cover, mp3File, transcriptsFile, async (uri: string) => {
+          await writeContractHook(writeContract,abi, "mintUniqueIp", [uri])
+          setIsLoading(false)
+          onClose();
+      })
+      } else {
+        onClose()
+      }
 
     };
   
@@ -74,7 +83,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
               <input
                 type="text"
                 id="parent"
-                value={remix}
+                value={podcastsData.filter(data => data.ipId === remix)[0].name}
                 disabled
                 className="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-500"
               />

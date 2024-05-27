@@ -1,7 +1,7 @@
 import { useDataStore } from "@/app/_context/data"
 import React from "react"
 
-const Sidebar = ({index}: {index: number}) => {
+const Sidebar = ({index, setIndex}: {index: number, setIndex: any}) => {
     const [isPlaying, setIsPlaying] = React.useState<boolean>(false)
     const { podcastsData } = useDataStore()
     return (
@@ -38,7 +38,9 @@ const Sidebar = ({index}: {index: number}) => {
 
                     </div>
                     <div className="flex space-x-8 ml-auto pb-4">
-                        <button className="text-blue-500">
+                        <button className="text-blue-500" onClick={() => {
+                            setIndex((index-1+podcastsData.length) % podcastsData.length)
+                        }}>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M10 19l-7-7 7-7v14zm9-14h-2v14h2v-14z" />
                             </svg>
@@ -71,7 +73,9 @@ const Sidebar = ({index}: {index: number}) => {
                                 </svg>
                             )}
                         </button>
-                        <button className="text-blue-500">
+                        <button className="text-blue-500" onClick={() => {
+                            setIndex((index+1) % podcastsData.length)
+                        }}>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M21 12l-7-7v14l7-7zM3 5v14h2V5H3z" />
                             </svg>
