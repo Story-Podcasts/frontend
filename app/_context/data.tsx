@@ -130,12 +130,12 @@ export const DataContextProvider = (props: Props) => {
                     BigInt(5980471),
                 )
                 console.log(events)
-                let notifs: Notification[] = events.map((event) => {
-                    return {
-                        ipId: (event.args as any[])[0] as string,
-                        recipient: (event.args as any[])[1] as string,
-                        licenseTokenId: (event.args as any[])[2] as number
-                    } as Notification
+                let notifs: Notification[] = events.filter(event => (event.args as any[])[1] === account.address).map((event) => {
+                        return {
+                            ipId: (event.args as any[])[0] as string,
+                            recipient: (event.args as any[])[1] as string,
+                            licenseTokenId: (event.args as any[])[2] as number
+                        } as Notification
                 })
                 setNotifications(notifs)
             })()

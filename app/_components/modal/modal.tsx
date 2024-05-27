@@ -5,6 +5,7 @@ import { BaseError, useReadContract, useWaitForTransactionReceipt, useWriteContr
 import abi from "../../abi/abi.json"
 import { parseAbi } from 'viem';
 import { useDataStore } from '@/app/_context/data';
+import Link from 'next/link';
 
 const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix: string | null}) => {
     const { 
@@ -160,7 +161,7 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="transcriptsFile">
-              Transcripts File
+              Transcripts File {"("}<Link className='text-blue-500' href={"https://rose-melodic-felidae-510.mypinata.cloud/ipfs/bafkreif2ybsgg3xe5heuswf6j2x2d2luji35gjzsn5uih5ujlbcnvys7di"} target='blank'>Sample</Link>{")"}
             </label>
             <div className="flex items-center">
               <label className="w-full p-3 border rounded-lg cursor-pointer focus:outline-none focus:border-blue-500 bg-gray-100 text-gray-700 hover:bg-gray-200">
