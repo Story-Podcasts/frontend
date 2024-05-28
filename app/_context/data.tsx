@@ -5,8 +5,9 @@ import { config } from "../_config/wallet";
 
 import abi from "../abi/abi.json"
 import { useAccount, useWriteContract } from "wagmi";
+import { StoryClient, StoryConfig } from "@story-protocol/core-sdk";
 import { logEvents, writeContractHook } from "../_utils/contract";
-import { parseAbiItem } from "viem";
+import { custom, parseAbiItem } from "viem";
 
 type PodcastData = {
     tokenId: number,
@@ -32,12 +33,14 @@ type StoreState = {
     podcastsData: PodcastData[],
     userName: string,
     notifications: Notification[],
+    storyClient: any
 }
 
 const DataContext = createContext<StoreState>({
     podcastsData: [],
     userName: "",
     notifications: [],
+    storyClient: undefined
 });
 
 export const useDataStore = () => useContext(DataContext);
@@ -46,6 +49,7 @@ export const DataContextProvider = (props: Props) => {
     const [ podcastsData, setPodcastData ] = useState<PodcastData[]>([]);
     const [ userName, setUserName ] = useState<string>("");
     const [ notifications, setNotifications ] = useState<Notification[]>([]);
+    const [ client, setClient ] = useState<any>(undefined);
     const account = useAccount()
     const { 
         writeContract 
@@ -138,6 +142,12 @@ export const DataContextProvider = (props: Props) => {
                         } as Notification
                 })
                 setNotifications(notifs)
+                const sconfig: StoryConfig = {
+                    transport: custom(window.ethereum),
+                    account: account.address, // the account address from above
+                    chainId: 'sepolia'
+                  };
+                setClient(StoryClient.newClient(sconfig));
             })()
         }
     }, [account.address])
@@ -146,7 +156,8 @@ export const DataContextProvider = (props: Props) => {
         <DataContext.Provider value={{
             podcastsData,
             userName,
-            notifications
+            notifications,
+            storyClient: client
         }}>
             {props.children}
         </DataContext.Provider>

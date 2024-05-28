@@ -1,11 +1,14 @@
 import { logEvents, writeContractHook } from '@/app/_utils/contract';
 import { createNFTMetadata, uploadFile, uploadJson } from '@/app/_utils/ipfs';
 import { useState } from 'react';
-import { BaseError, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { BaseError, useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import abi from "../../abi/abi.json"
+import nft from "../../abi/nft.json"
+
 import { parseAbi } from 'viem';
 import { useDataStore } from '@/app/_context/data';
 import Link from 'next/link';
+import { mintNFT } from '@/app/_utils/mint';
 
 const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix: string | null}) => {
     const { 
@@ -15,8 +18,12 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
     } = useWriteContract() 
 
     const {
-      podcastsData
+      podcastsData,
+      storyClient,
+      notifications
     } = useDataStore()
+
+    const account = useAccount()
 
 
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -58,13 +65,31 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
       e.preventDefault()
       if (!remix) {
         setIsLoading(true)
+        // createNFTMetadata(podcastName, cover, mp3File, transcriptsFile, async (uri: string) => {
+          await writeContractHook(writeContract,abi, "registerandLicenseforUniqueIP", ["https://rose-melodic-felidae-510.mypinata.cloud/ipfs/bafkreidfm45xxfovr3awt7zvk533z4pddbg2cylbbicrtvpezmoyn2qeiy", collaborator])
+          setIsLoading(false)
+          onClose();
+      // })
+      } else {
         createNFTMetadata(podcastName, cover, mp3File, transcriptsFile, async (uri: string) => {
-          await writeContractHook(writeContract,abi, "registerandLicenseforUniqueIP", [uri, collaborator])
+          const tokenId = await mintNFT(writeContract, nft, [account.address, uri])
+          console.log(tokenId)
+          const registeredIpAssetDerivativeResponse = await storyClient.ipAsset.register({
+            nftContract: process.env.NEXT_PUBLIC_NFT,
+            tokenId: 2,
+            txOptions: { waitForTransaction: true },
+          })
+          console.log(registeredIpAssetDerivativeResponse.ipId)
+          const linkDerivativeResponse = await storyClient.ipAsset.registerDerivativeWithLicenseTokens({
+            childIpId: registeredIpAssetDerivativeResponse.ipId,
+            licenseTokenIds: [notifications.filter(data => data.ipId === remix)[0].licenseTokenId],
+            txOptions: { waitForTransaction: true },
+          })
+          await writeContractHook(writeContract,abi, "registerAndMintTokenForRemixIP", [1, linkDerivativeResponse.ipId])
+        
           setIsLoading(false)
           onClose();
       })
-      } else {
-        onClose()
       }
       
 
@@ -109,20 +134,22 @@ const Modal = ({ isOpen, onClose, remix }: {isOpen: boolean, onClose: any, remix
               placeholder="Enter podcast name"
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="collaborator">
-              Collaborator Address
-            </label>
-            <input
-              required
-              type="text"
-              id="collborator"
-              value={collaborator}
-              onChange={handleCollaboratorChange}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-500"
-              placeholder="Address which can remix IP"
-            />
-          </div>
+          {!remix && (
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="collaborator">
+                Collaborator Address
+              </label>
+              <input
+                required
+                type="text"
+                id="collborator"
+                value={collaborator}
+                onChange={handleCollaboratorChange}
+                className="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Address which can remix IP"
+              />
+            </div>
+          )}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mp3File">
               MP3 File
